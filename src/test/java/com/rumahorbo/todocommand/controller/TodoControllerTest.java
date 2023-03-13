@@ -31,9 +31,7 @@ class TodoControllerTest {
         Todo learning = new Todo("learning", false);
         Flux<Todo> actual = this.repository.deleteAll().thenMany(this.repository.save(learning)).thenMany(this.repository.findAll());
         StepVerifier.create(actual)
-                .consumeNextWith(todo -> {
-                    learning.setId(todo.getId());
-                })
+                .consumeNextWith(todo -> learning.setId(todo.getId()))
                 .expectNextCount(0)
                 .verifyComplete();
 
@@ -54,9 +52,7 @@ class TodoControllerTest {
         Todo learning = new Todo("learning", false);
         Flux<Todo> actual = this.repository.deleteAll().thenMany(this.repository.save(learning)).thenMany(this.repository.findAll());
         StepVerifier.create(actual)
-                .consumeNextWith(todo -> {
-                    learning.setId(todo.getId());
-                })
+                .consumeNextWith(todo -> learning.setId(todo.getId()))
                 .expectNextCount(0)
                 .verifyComplete();
 
@@ -67,9 +63,7 @@ class TodoControllerTest {
                 .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .exchange()
                 .expectStatus()
-                .is2xxSuccessful()
-                .expectBody(Todo.class)
-                .isEqualTo(null);
+                .isBadRequest();
     }
 
 }

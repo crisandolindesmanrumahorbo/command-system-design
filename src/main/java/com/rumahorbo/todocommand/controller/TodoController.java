@@ -3,6 +3,7 @@ package com.rumahorbo.todocommand.controller;
 import com.rumahorbo.todocommand.model.Todo;
 import com.rumahorbo.todocommand.service.TodoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -20,8 +21,9 @@ public class TodoController {
     }
 
     @GetMapping("/{id}")
-    public Mono<Todo> getTodo(@PathVariable Integer id) {
-        return this.service.getById(id);
+    public Mono<ResponseEntity<Todo>> getTodo(@PathVariable Integer id) {
+        return this.service.getById(id).map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -30,12 +32,15 @@ public class TodoController {
     }
 
     @PutMapping("/{id}")
-    public Mono<Todo> updateTodo(@PathVariable Integer id, @RequestBody Todo todo) {
-        return this.service.updateById(id, todo);
+    public Mono<ResponseEntity<Todo>> updateTodo(@PathVariable Integer id, @RequestBody Todo todo) {
+        return this.service.updateById(id, todo)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.badRequest().build());
     }
 
     @DeleteMapping("/{id}")
-    public Mono<Void> deleteTodo(@PathVariable Integer id) {
-        return this.service.deleteById(id);
+    public Mono<ResponseEntity<Void>> deleteTodo(@PathVariable Integer id) {
+        return this.service.deleteById(id).map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }
