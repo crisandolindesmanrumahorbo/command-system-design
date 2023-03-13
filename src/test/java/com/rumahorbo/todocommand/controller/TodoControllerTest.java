@@ -1,48 +1,75 @@
 package com.rumahorbo.todocommand.controller;
 
 import com.rumahorbo.todocommand.model.Todo;
-import com.rumahorbo.todocommand.service.TodoService;
+import com.rumahorbo.todocommand.repository.TodoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
-import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = TodoController.class)
-@Import(TodoService.class)
+@SpringBootTest
+@AutoConfigureWebTestClient
 class TodoControllerTest {
 
     @Autowired
     private WebTestClient client;
 
-    @MockBean
-    private TodoService service;
+    @Autowired
+    private TodoRepository repository;
 
     @Test
-    void putTodo() {
-        int id = 1;
-        Todo response = new Todo("learning", true);
-        when(this.service.updateById(id, response)).thenReturn(Mono.just(response));
+    void updateTodo_shouldReturnUpdatedTodo_whenTodoIdIsExist() {
+        Todo learning = new Todo("learning", false);
+        Flux<Todo> actual = this.repository.deleteAll().thenMany(this.repository.save(learning)).thenMany(this.repository.findAll());
+        StepVerifier.create(actual)
+                .consumeNextWith(todo -> {
+                    learning.setId(todo.getId());
+                })
+                .expectNextCount(0)
+                .verifyComplete();
 
         this.client
                 .put()
-                .uri("/todo/" + id)
-                .bodyValue(response)
+                .uri("/todo/" + learning.getId())
+                .bodyValue(learning)
                 .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful()
                 .expectBody(Todo.class)
-                .isEqualTo(response);
+                .isEqualTo(learning);
+    }
+
+    @Test
+    void updateTodo_shouldReturnNull_whenTodoIdIsNotExist() {
+        Todo learning = new Todo("learning", false);
+        Flux<Todo> actual = this.repository.deleteAll().thenMany(this.repository.save(learning)).thenMany(this.repository.findAll());
+        StepVerifier.create(actual)
+                .consumeNextWith(todo -> {
+                    learning.setId(todo.getId());
+                })
+                .expectNextCount(0)
+                .verifyComplete();
+
+        this.client
+                .put()
+                .uri("/todo/2")
+                .bodyValue(learning)
+                .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(Todo.class)
+                .isEqualTo(null);
     }
 
 }
