@@ -27,7 +27,7 @@ public class TodoController {
     }
 
     @PostMapping
-    public Mono<Todo> postTodo(@RequestBody Todo todo) {
+    public Mono<Todo> createTodo(@RequestBody Todo todo) {
         return this.service.save(todo);
     }
 
@@ -40,7 +40,8 @@ public class TodoController {
 
     @DeleteMapping("/{id}")
     public Mono<ResponseEntity<Void>> deleteTodo(@PathVariable Integer id) {
-        return this.service.deleteById(id).map(ResponseEntity::ok)
+        return this.service.deleteById(id)
+                .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }
