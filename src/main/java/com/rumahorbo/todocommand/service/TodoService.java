@@ -15,8 +15,10 @@ public class TodoService {
     @Autowired
     private TodoRepository repository;
 
-    public Mono<Void> deleteById(Integer id) {
-        return this.repository.deleteById(id);
+    public Mono<Todo> deleteById(Integer id) {
+        return this.repository.findById(id)
+                .flatMap(existing -> this.repository.delete(existing)
+                .then(Mono.just(existing)));
     }
 
     public Flux<Todo> getAll() {

@@ -39,7 +39,7 @@ public class TodoController {
     }
 
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> deleteTodo(@PathVariable Integer id) {
+    public Mono<ResponseEntity<Todo>> deleteTodo(@PathVariable Integer id) {
         return this.service.deleteById(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());

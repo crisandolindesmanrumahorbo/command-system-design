@@ -152,7 +152,7 @@ class TodoControllerTest {
     }
 
     @Test
-    void deleteId_shouldReturnHttpStatusNotFound_whenTodoIdIsNotExist() {
+    void deleteTodo_shouldReturnHttpStatusNotFound_whenTodoIdIsNotExist() {
         this.client
                 .delete()
                 .uri("/todo/1")
@@ -160,6 +160,27 @@ class TodoControllerTest {
                 .exchange()
                 .expectStatus()
                 .isNotFound();
+    }
+
+    @Test
+    void deleteTodo_shouldReturnTodo_whenTodoIdIsExist() {
+        Todo learning = todoFactory.constructTodo("learning");
+        Flux<Todo> actual = this.repository.deleteAll()
+                .thenMany(this.repository.save(learning)).
+                thenMany(this.repository.findAll());
+        StepVerifier.create(actual)
+                .expectNextCount(1)
+                .verifyComplete();
+
+        this.client
+                .delete()
+                .uri("/todo/" + learning.getId())
+                .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful()
+                .expectBody(Todo.class)
+                .isEqualTo(learning);
     }
 
 }
